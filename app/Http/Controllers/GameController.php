@@ -15,10 +15,19 @@ use App\Http\Resources\ErrorResource;
 use App\Http\Resources\ValidationResource;
 use App\Http\Resources\ResponseResource;
 
+use App\Repositories\GameRepository;
+
 use Illuminate\Support\Facades\DB;
 
 class GameController extends Controller
 {
+    protected $gameRepository;
+
+    public function __construct(GameRepository $gameRepository){
+        GameResource::withoutWrapping();
+        $this->gameRepository = $gameRepository;
+    }
+
     /**
      * Display a listing of the resource.
      *
