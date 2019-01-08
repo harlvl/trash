@@ -98,7 +98,22 @@ class GameController extends Controller
      */
     public function show($id)
     {
-        return 42;
+        try{
+            $game = $this->gameRepository->getById($id);   
+            if (!$game){
+                $notFoundResource = new NotFoundResource(null);
+                $notFoundResource->title('Game not found');
+                $notFoundResource->notFound(['id'=>$id]);
+                return $notFoundResource->response()->setStatusCode(404);
+            }
+            $gameResource =  new GameResource($game);  
+            $responseResource = new ResponseResource(null);
+            $responseResource->title('Get game');  
+            $responseResource->body($gameResource);
+            return $responseResource;
+        }catch(\Exception $e){
+            return (new ExceptionResource($e))->response()->setStatusCode(500);
+        }
     }
 
     /**
@@ -119,9 +134,34 @@ class GameController extends Controller
      * @param  \App\Game  $game
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Game $game)
+    public function update($id, Request $data)
     {
-        //
+        try{
+            $gameDataArray= Algorithm::quitNullValuesFromArray($data->all());
+         
+            DB::beginTransaction();
+            $game= $this->gameRepository->getById($id);
+            if (!$game){
+                $notFoundResource = new NotFoundResource(null);
+                $notFoundResource->title('Game not found');
+                $notFoundResource->notFound(['id'=>$id]);
+                return $notFoundResource->response()->setStatusCode(404);
+            }
+            $this->gameRepository->setModel($game);
+            $this->gameRepository->update($gameDataArray);
+            $game = $this->gameRepository->getModel();
+            DB::commit();
+
+            $gameResource =  new GameResource($game);
+            $responseResource = new ResponseResource(null);
+            $responseResource->title('Game update successfully');       
+            $responseResource->body($responseResource);     
+            
+            return $responseResourse;   
+        }catch(\Exception $e){
+            DB::rollback();
+            return (new ExceptionResource($e))->response()->setStatusCode(500);   
+        }
     }
 
     /**
@@ -130,8 +170,27 @@ class GameController extends Controller
      * @param  \App\Game  $game
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Game $game)
+    public function destroy($id)
     {
-        //
+        try{
+            DB::beginTransaction();
+            $game = $this->gameRepository->getById($id);
+            if (!$game){
+                $notFoundResource = new NotFoundResource(null);
+                $notFoundResource->title('Game not found');
+                $notFoundResource->notFound(['id'=>$id]);
+                return $notFoundResource->response()->setStatusCode(404);;
+            }
+            $this->gameRepository->setModel($game);
+            $this->gameRepository->softDelete();
+            $responseResource = new ResponseResource(null);
+            $responseResource->title('Game deleted');  
+            $responseResource->body(['id' => $id]);
+            DB::commit();
+
+            return $responseResource;
+        }catch(\Exception $e){
+            return (new ExceptionResource($e))->response()->setStatusCode(500);
+        }
     }
 }

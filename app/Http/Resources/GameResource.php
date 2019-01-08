@@ -19,8 +19,8 @@ class GameResource extends JsonResource
             'id'            => $this->id,
             'attributes'    => [
                 'title' => $this->title,
-                'release_year' => $this->release_year,
                 'genre' => $this->genre,
+                'release_date' => $this->release_date,
                 'deleted' => $this->deleted,
                 'created_at' => $this->created_at,
                 'updated_at' => $this->updated_at,
